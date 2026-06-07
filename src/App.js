@@ -228,7 +228,10 @@ function Lectura({ imagenData, onNueva }) {
     try {
       const response = await fetch('https://cumpleanos-app.onrender.com/api/quiromante', {
   method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    'x-api-secret': process.env.REACT_APP_API_SECRET,
+  },
   body: JSON.stringify({ messages: historial }),
 });
 
@@ -264,7 +267,8 @@ function Lectura({ imagenData, onNueva }) {
     };
     setMessages([{ role: 'user', content: `[Foto de mano ${imagenData.mano}]`, _display: true }]);
     llamarAPI([primerMensaje]);
-  }, [llamarAPI, imagenData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleEnviar = async () => {
     const texto = input.trim();
