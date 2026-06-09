@@ -1,4 +1,10 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createClient } from "@supabase/supabase-js";
+
+const supabase = createClient(
+  "https://jnnhyrmalmsdepvzjhfa.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impubmh5cm1hbG1zZGVwdnpqaGZhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwNTA2OTgsImV4cCI6MjA5NDYyNjY5OH0.09K8Es_SMn9PrnU-pBrGq954k8NFkAi93yVCYGfTckA"
+);
 
 
 // ─── Estrellas ────────────────────────────────────────────────────────────────
@@ -434,6 +440,21 @@ export default function App() {
   const [fase, setFase] = useState('bienvenida');
   const [imagenData, setImagenData] = useState(null);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      supabase.auth.setSession({ access_token: token, refresh_token: token })
+        .then(({ error }) => {
+          if (error) window.location.href = "https://universo-portal-art.vercel.app";
+        });
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) window.location.href = "https://universo-portal-art.vercel.app";
+      });
+    }
+  }, []);
 
   const handleImageReady = (data) => {
     setImagenData(data);
