@@ -232,14 +232,36 @@ function Lectura({ imagenData, onNueva }) {
     setLoading(true);
     setError('');
     try {
+      // Verificar contador de consultas
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const contador = await fetch('https://cumpleanos-app.onrender.com/api/consulta', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-secret': process.env.REACT_APP_API_SECRET,
+          },
+          body: JSON.stringify({
+            user_id: session.user.id,
+            email: session.user.email,
+          }),
+        });
+        const contadorData = await contador.json();
+        if (!contadorData.permitido) {
+          setError('Has usado tus 3 consultas gratuitas. Visita el Universo Despertar para continuar.');
+          setLoading(false);
+          return;
+        }
+      }
+
       const response = await fetch('https://cumpleanos-app.onrender.com/api/quiromante', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'x-api-secret': process.env.REACT_APP_API_SECRET,
-  },
-  body: JSON.stringify({ messages: historial }),
-});
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-secret': process.env.REACT_APP_API_SECRET,
+        },
+        body: JSON.stringify({ messages: historial }),
+      });
 
       if (!response.ok) throw new Error('La Quiromante no pudo hablar en este momento');
       const data = await response.json();
