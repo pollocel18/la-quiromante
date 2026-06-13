@@ -228,7 +228,7 @@ function Lectura({ imagenData, onNueva }) {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const llamarAPI = useCallback(async (historial) => {
+const llamarAPI = useCallback(async (historial) => {
     setLoading(true);
     setError('');
     try {
@@ -267,6 +267,19 @@ function Lectura({ imagenData, onNueva }) {
       const data = await response.json();
       const texto = data.respuesta;
       setMessages(prev => [...prev, { role: 'assistant', content: texto }]);
+
+      // Guardar en bitácora si hay perfil_id
+      const perfilId = new URLSearchParams(window.location.search).get("perfil_id");
+      if (perfilId) {
+        const consulta = historial[historial.length - 1]?.content || '';
+        await supabase.from("bitacora").insert([{
+          perfil_id: perfilId,
+          app: "manos",
+          consulta: typeof consulta === 'string' ? consulta : 'Imagen de mano',
+          respuesta: texto,
+        }]);
+      }
+
     } catch (err) {
       setError(err.message);
     } finally {
